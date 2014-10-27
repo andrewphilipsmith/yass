@@ -10,7 +10,9 @@ class TestSudokuGrid(unittest.TestCase):
     def setUp(self):
         self.working_grid = sudoku_grid.SudokuGrid(fixtures.grid_working)
         self.failing_grid = sudoku_grid.SudokuGrid(fixtures.grid_fail)
-
+        self.partial_grid = sudoku_grid.SudokuGrid(fixtures.grid_partial_working)
+        self.ambiguious_grid = sudoku_grid.SudokuGrid(fixtures.grid_ambiguious)
+        
     def test_class_grid_constructor(self):
         pass
 
@@ -51,12 +53,25 @@ class TestSudokuGrid(unittest.TestCase):
         self.assertEqual(self.working_grid.get_squ(8), fixtures.grid_working_squ8, msg="square 8 failed")
 
     def test_subset_is_compliant(self):
-        self.assertTrue(self.working_grid.subset_is_compliant(working_grid.get_squ(1)))
-        self.assertFalse(self.failing_grid.subset_is_compliant(grid_fail.get_squ(1)))
+        for x in range(1, 27):
+            self.assertTrue(self.working_grid._subset_is_compliant(self.working_grid.get_subset(x)))
+            self.assertFalse(self.failing_grid._subset_is_compliant(self.failing_grid.get_subset(x)))
 
     def test_grid_is_compliant(self):
-        pass
+        self.assertTrue(self.working_grid.is_grid_compliant())
+        self.assertFalse(self.failing_grid.is_grid_compliant())
 
+    def test_grid_is_complete(self):
+        self.assertTrue(self.working_grid.is_complete())
+        self.assertTrue(self.failing_grid.is_complete())
+        self.assertFalse(self.partial_grid.is_complete())
+        
+    def test_solve_grid(self):
+        self.assertEquals(self.working_grid.solve(),sudoku_grid.SudokuGrid.solved)
+        self.assertEquals(self.partial_grid.solve(),sudoku_grid.SudokuGrid.solved)
+        self.assertEquals(self.failing_grid.solve(),sudoku_grid.SudokuGrid.invalid)
+        self.assertEquals(self.ambiguious_grid.solve(),sudoku_grid.SudokuGrid.ambiguious)
+    
 if __name__ == '__main__':
     # maosmtoshape = reload(maosmtoshape)
     unittest.main()
