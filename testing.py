@@ -53,23 +53,34 @@ class TestSudokuGrid(unittest.TestCase):
         self.assertEqual(self.working_grid.get_squ(8), fixtures.grid_working_squ8, msg="square 8 failed")
 
     def test_subset_is_compliant(self):
-        for x in range(1, 27):
+        for x in range(0, 27):
             self.assertTrue(self.working_grid._subset_is_compliant(self.working_grid.get_subset(x)))
+            self.assertTrue(self.partial_grid._subset_is_compliant(self.partial_grid.get_subset(x)))
             self.assertFalse(self.failing_grid._subset_is_compliant(self.failing_grid.get_subset(x)))
 
-    def test_grid_is_compliant(self):
-        self.assertTrue(self.working_grid.is_grid_compliant())
-        self.assertFalse(self.failing_grid.is_grid_compliant())
+    def test_subset_is_solved(self):
+        for x in range(0, 27):
+            self.assertTrue(self.working_grid._subset_is_solved(self.working_grid.get_subset(x)))
+            self.assertFalse(self.failing_grid._subset_is_solved(self.failing_grid.get_subset(x)))
+
+    def test_grid_is_solved(self):
+        self.assertTrue(self.working_grid.is_grid_solved())
+        self.assertFalse(self.failing_grid.is_grid_solved())
 
     def test_grid_is_complete(self):
         self.assertTrue(self.working_grid.is_complete())
         self.assertTrue(self.failing_grid.is_complete())
         self.assertFalse(self.partial_grid.is_complete())
+    
+    def test_grid_is_compliant(self):
+        self.assertTrue(self.working_grid.is_compliant())
+        self.assertTrue(self.partial_grid.is_compliant())
+        self.assertFalse(self.failing_grid.is_compliant())
         
-#    def test_solve_grid(self):
-#        self.assertEquals(self.working_grid.solve(),(sudoku_grid.SudokuGrid.solved, self.working_grid))
-#        self.assertEquals(self.partial_grid.solve(),(sudoku_grid.SudokuGrid.solved, self.working_grid))
-#        self.assertEquals(self.failing_grid.solve(),(sudoku_grid.SudokuGrid.invalid, None))
+    def test_solve_grid(self):
+        self.assertEquals(self.working_grid.solve(),(sudoku_grid.SudokuGrid.solved, self.working_grid))
+ #       self.assertEquals(self.partial_grid.solve(),(sudoku_grid.SudokuGrid.solved, self.working_grid))
+        self.assertEquals(self.failing_grid.solve(),(sudoku_grid.SudokuGrid.invalid, None))
 #        self.assertEquals(self.ambiguious_grid.solve(),(sudoku_grid.SudokuGrid.ambiguious, None))
 
     def test_select_empty_cell(self):

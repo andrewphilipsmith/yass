@@ -73,18 +73,30 @@ class SudokuGrid():
         return self._get_subset(index, index_squ(index))
 
     def _subset_is_compliant(self, subset):
-        return [1,2,3,4,5,6,7,8,9] == sorted(subset)
-
-    def is_grid_compliant(self):
+        for n in [1,2,3,4,5,6,7,8,9]:
+            if subset.count(n) > 1:
+                return False
+        return True
+    
+    def is_compliant(self):
         for x in range(0, 27):
             if not self._subset_is_compliant(self.get_subset(x)):
                 return False
         return True
+    
+    def _subset_is_solved(self, subset):
+        return [1,2,3,4,5,6,7,8,9] == sorted(subset)
+
+    def is_grid_solved(self):
+        for x in range(0, 27):
+            if not self._subset_is_solved(self.get_subset(x)):
+                return False
+        return True
 
     def is_complete(self):
-        f = lambda my_bol,my_int : my_bol and (my_int in [1,2,3,4,5,6,7,8,9])
-        return reduce(f, self.grid, True)
-
+        def f(my_bol,my_int): return my_bol and (my_int in [1,2,3,4,5,6,7,8,9])
+        return reduce(f, self.grid, True)    
+        
     def _list_of_new_grids(self, next_cell):
         new_grids = []
         for t in [1,2,3,4,5,6,7,8,9]:
@@ -108,15 +120,15 @@ class SudokuGrid():
     
     def solve(self):
         # print self.grid
-        if self.is_grid_compliant():
+        if self.is_grid_solved():
             print "SOLVED!"
             return (SudokuGrid.solved, self)
-        elif self.is_complete():
-            #print "DEAD END"
+        elif self.is_complete() or not self.is_compliant():
+            # print "DEAD END"
+            # print_grid(self.grid)
             return (SudokuGrid.invalid, None)
         else:
-            solutions = []
-            for next_cell in self._get_blank_cells():
+            for next_cell in get_blank_cells(self.grid):
                 # new_grids = []
                 for t in [1,2,3,4,5,6,7,8,9]:
                     new_grid = list(self.grid)
@@ -126,34 +138,18 @@ class SudokuGrid():
                     result = new_grid_object.solve()
                     try:
                         if result[0] == SudokuGrid.solved:
-                            solutions.append(result)
+                            return result
                     except IndexError:
                         print "result = {}".format(result)
                         print_grid(new_grid)
-                        exit()
-
-                # new_results = self._list_of_new_grids(next_cell)
-                # new_results = map(solve, new_grids)
-                # solutions.extend(filter(self._filter_solved_grids, new_results))
-                # filtered_list = [i for i, x in enumerate(new_results) if x[0]==SudokuGrid.solved ]
-                # print "filtered_list = {}".format(filtered_list)
-                # solutions.extend(filtered_list)
-                # print solutions
-                
+                        exit()                
     
-            if len(solutions) > 0:
-                return solutions
-            else:
-                return SudokuGrid.invalid, None
-
-            #elif len(solutions) > 1:
-            #    return SudokuGrid.ambiguious, None
-                            
+            return SudokuGrid.invalid, None
         
  
 if __name__ == '__main__':
-    result = SudokuGrid(fixtures.grid_partial_working).solve()
+    result = SudokuGrid(fixtures.grid_real).solve()
     print result[0]
     #print result[0][1]
     #print result[1].grid
-    print_grid(result[0][1].grid)
+    print_grid(result[1].grid)
