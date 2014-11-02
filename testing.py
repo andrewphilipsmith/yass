@@ -11,6 +11,7 @@ class TestSudokuGrid(unittest.TestCase):
         self.working_grid = sudoku_grid.SudokuGrid(fixtures.grid_working)
         self.failing_grid = sudoku_grid.SudokuGrid(fixtures.grid_fail)
         self.partial_grid = sudoku_grid.SudokuGrid(fixtures.grid_partial_working)
+        self.real_grid = sudoku_grid.SudokuGrid(fixtures.grid_real)
         self.ambiguious_grid = sudoku_grid.SudokuGrid(fixtures.grid_ambiguious)
         
     def test_class_grid_constructor(self):
@@ -52,6 +53,10 @@ class TestSudokuGrid(unittest.TestCase):
         self.assertEqual(self.working_grid.get_squ(7), fixtures.grid_working_squ7, msg="square 7 failed")
         self.assertEqual(self.working_grid.get_squ(8), fixtures.grid_working_squ8, msg="square 8 failed")
 
+    def test_subsets_from_cell_num(self):
+        for cell in range(0,81):
+            self.assertEqual(sudoku_grid.subsets_from_cell_num(cell), fixtures.grid_subsets_from_cell_number[cell], msg="cell {} failed".format(cell))
+        
     def test_subset_is_compliant(self):
         for x in range(0, 27):
             self.assertTrue(self.working_grid._subset_is_compliant(self.working_grid.get_subset(x)))
@@ -78,10 +83,24 @@ class TestSudokuGrid(unittest.TestCase):
         self.assertFalse(self.failing_grid.is_compliant())
         
     def test_solve_grid(self):
-        self.assertEquals(self.working_grid.solve(),(sudoku_grid.SudokuGrid.solved, self.working_grid))
- #       self.assertEquals(self.partial_grid.solve(),(sudoku_grid.SudokuGrid.solved, self.working_grid))
-        self.assertEquals(self.failing_grid.solve(),(sudoku_grid.SudokuGrid.invalid, None))
-#        self.assertEquals(self.ambiguious_grid.solve(),(sudoku_grid.SudokuGrid.ambiguious, None))
+        solved_working = self.working_grid.solve()
+        self.assertEquals(solved_working[0],sudoku_grid.SudokuGrid.solved)
+        self.assertEquals(solved_working[1],self.working_grid)
+        # print "number of iterations = ".format(solved_working[2])
+        
+        solved_failing = self.failing_grid.solve()
+        self.assertEquals(solved_failing[0],sudoku_grid.SudokuGrid.invalid)
+        self.assertEquals(solved_failing[1],None)
+        # print "number of iterations = ".format(solved_working[2])
+        
+#        self.assertEquals(self.partial_grid.solve(),(sudoku_grid.SudokuGrid.solved, self.working_grid))
+#       self.assertEquals(self.ambiguious_grid.solve(),(sudoku_grid.SudokuGrid.ambiguious, None))
+
+    def test_unused_val_from_cell(self):
+        for x in range(0, 81):
+            print "x={}  cells={} ".format(x, self.real_grid.unused_val_from_cell(x))
+        self.assertEquals(False)
+        
 
     def test_select_empty_cell(self):
         self.assertEquals(sorted(sudoku_grid.get_blank_cells(self.partial_grid.grid)), sorted(fixtures.grid_partial_blank_cell_indicies))

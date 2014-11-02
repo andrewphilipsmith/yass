@@ -1,5 +1,6 @@
 import logging
 import sys
+import time
 
 import fixtures
 
@@ -14,6 +15,13 @@ def index_squ(index):
     cellblock = lambda m:range(m,m+3) + range(m+9,m+12) + range(m+18,m+21)
     return cellblock(firstcell(index))
 
+def subsets_from_cell_num(cellnum):
+    row = (cellnum / 9)
+    col = (cellnum % 9) + 9
+    squ = 3*(cellnum / 27) + ((cellnum % 9) / 3) + 18
+    # print "cell = {}  row = {}  col = {}  squ = {}".format(cellnum, row, col, squ)
+    return [row, col, squ]
+
 def print_grid(grid):
     if len(grid) == 81:
         for r in range(0,81,9):
@@ -27,7 +35,6 @@ def get_blank_cells(alist):
     return [i for i, x in enumerate(alist) if x < 1 ]
     # return map(self.grid.index, filter(lambda n:n not in [1,2,3,4,5,6,7,8,9], self.grid)).pop()
 
-            
     
 class SudokuGrid():
 
@@ -72,6 +79,15 @@ class SudokuGrid():
         # gives the index of the first cell in the square
         return self._get_subset(index, index_squ(index))
 
+    def unused_val_from_cell(self, cellnum):
+        one_nine = {1,2,3,4,5,6,7,8,9}
+        used_vals = set()
+        for s in subsets_from_cell_num(cellnum):
+            used_vals = used_vals | set(self.get_subset(s))
+        #remove zeros etc
+        used_vals = used_vals & one_nine
+        return one_nine - used_vals
+        
     def _subset_is_compliant(self, subset):
         for n in [1,2,3,4,5,6,7,8,9]:
             if subset.count(n) > 1:
@@ -102,21 +118,12 @@ class SudokuGrid():
         for t in [1,2,3,4,5,6,7,8,9]:
             new_grid = self.grid
             new_grid[next_cell] = t
-            print "Trying added value {} to cell number {}".format(t, next_cell)
+            # print "Trying added value {} to cell number {}".format(t, next_cell)
             new_grids.append(SudokuGrid(new_grid).solve())
         return new_grids
 
     def _filter_solved_grids(self, solution):
         return solution[0] == SudokuGrid.solved
-        #if 2 == len(solution):
-        #else:
-        #    return False
-        #try:
-        #    return solution[0] == SudokuGrid.solved
-        #except IndexError:
-        #    # print solution
-        #    return False
-
     
     def solve(self):
         # print self.grid
@@ -124,16 +131,17 @@ class SudokuGrid():
             print "SOLVED!"
             return (SudokuGrid.solved, self)
         elif self.is_complete() or not self.is_compliant():
-            # print "DEAD END"
+            print "DEAD END"
             # print_grid(self.grid)
             return (SudokuGrid.invalid, None)
         else:
             for next_cell in get_blank_cells(self.grid):
                 # new_grids = []
-                for t in [1,2,3,4,5,6,7,8,9]:
+                for t in self.unused_val_from_cell(next_cell):
+                    # [1,2,3,4,5,6,7,8,9]:
                     new_grid = list(self.grid)
                     new_grid[next_cell] = t
-                    #print "Trying added value {} to cell number {}".format(t, next_cell)
+                    # print "Trying added value {} to cell number {}".format(t, next_cell)
                     new_grid_object =  SudokuGrid(new_grid)
                     result = new_grid_object.solve()
                     try:
@@ -148,8 +156,13 @@ class SudokuGrid():
         
  
 if __name__ == '__main__':
+    starttime = time.time()
     result = SudokuGrid(fixtures.grid_real).solve()
+    endtime = time.time()
     print result[0]
     #print result[0][1]
     #print result[1].grid
     print_grid(result[1].grid)
+    print "start time = {}".format(endtime)
+    print "end time = {}".format(starttime)
+    print "time taken = {}".format(endtime-starttime)
