@@ -98,14 +98,18 @@ class TestSudokuGrid(unittest.TestCase):
 
     def test_unused_val_from_cell(self):
         for x in range(0, 81):
-            print "x={}  cells={} ".format(x, self.real_grid.unused_val_from_cell(x))
-        self.assertEquals(False)
+            print "x={}  cells={} fixture={} ".format(x, self.real_grid.unused_val_from_cell(x), fixtures.grid_real_unused_val_from_cell[x])
+            self.assertEquals(self.real_grid.unused_val_from_cell(x), 
+            fixtures.grid_real_unused_val_from_cell[x])
+        #self.assertEquals(False)
         
-
-    def test_select_empty_cell(self):
+    def test_get_blank_cells(self):
         self.assertEquals(sorted(sudoku_grid.get_blank_cells(self.partial_grid.grid)), sorted(fixtures.grid_partial_blank_cell_indicies))
         self.assertEquals(sorted(sudoku_grid.get_blank_cells(self.partial_grid.get_subset(0))), [8])
-    
+
+        self.assertEquals(sorted(sudoku_grid.get_blank_cells(self.real_grid.grid)), sorted(fixtures.grid_real_blank_cell_indicies))
+
+        
 if __name__ == '__main__':
     # maosmtoshape = reload(maosmtoshape)
     unittest.main()

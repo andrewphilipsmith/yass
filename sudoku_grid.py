@@ -81,13 +81,17 @@ class SudokuGrid():
 
     def unused_val_from_cell(self, cellnum):
         one_nine = {1,2,3,4,5,6,7,8,9}
-        used_vals = set()
-        for s in subsets_from_cell_num(cellnum):
-            used_vals = used_vals | set(self.get_subset(s))
-        #remove zeros etc
-        used_vals = used_vals & one_nine
-        return one_nine - used_vals
-        
+        if self.grid[cellnum] not in one_nine:    
+            one_nine = {1,2,3,4,5,6,7,8,9}
+            used_vals = set()
+            for s in subsets_from_cell_num(cellnum):
+                used_vals = used_vals | set(self.get_subset(s))
+            #remove zeros etc
+            used_vals = used_vals & one_nine
+            return one_nine - used_vals
+        else:
+            return set()
+            
     def _subset_is_compliant(self, subset):
         for n in [1,2,3,4,5,6,7,8,9]:
             if subset.count(n) > 1:
@@ -131,17 +135,18 @@ class SudokuGrid():
             print "SOLVED!"
             return (SudokuGrid.solved, self)
         elif self.is_complete() or not self.is_compliant():
-            print "DEAD END"
+            print "DEAD END - full grid"
             # print_grid(self.grid)
             return (SudokuGrid.invalid, None)
         else:
-            for next_cell in get_blank_cells(self.grid):
-                # new_grids = []
-                for t in self.unused_val_from_cell(next_cell):
-                    # [1,2,3,4,5,6,7,8,9]:
+            next_cell = get_blank_cells(self.grid).pop()
+            # print "next_cell = {} ".format(next_cell)
+            for next_val in self.unused_val_from_cell(next_cell):
+                if next_val is not set():
+                    #print "next_cell = {} next_val = {}".format(next_cell,next_val)
                     new_grid = list(self.grid)
-                    new_grid[next_cell] = t
-                    # print "Trying added value {} to cell number {}".format(t, next_cell)
+                    new_grid[next_cell] = next_val
+                    #print "Trying added value {} to cell number {}".format(t, next_cell)
                     new_grid_object =  SudokuGrid(new_grid)
                     result = new_grid_object.solve()
                     try:
@@ -150,13 +155,20 @@ class SudokuGrid():
                     except IndexError:
                         print "result = {}".format(result)
                         print_grid(new_grid)
-                        exit()                
-    
+                        exit()
+
+            #except KeyError:
+                # There are no valid values for the current next cell
+                #print "DEAD END - incomplete grid"
+                # print_grid(self.grid)
+                #return (SudokuGrid.invalid, None)
+                    
             return SudokuGrid.invalid, None
-        
+                            
  
 if __name__ == '__main__':
     starttime = time.time()
+    print_grid(fixtures.grid_real)
     result = SudokuGrid(fixtures.grid_real).solve()
     endtime = time.time()
     print result[0]
